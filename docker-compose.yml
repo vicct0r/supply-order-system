@@ -1,0 +1,99 @@
+services:
+  hub_db:
+    image: postgres:17
+    volumes:
+      - hub_db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: dbhub
+      POSTGRES_USER: victor
+      POSTGRES_PASSWORD: 12345Victor
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U victor -d dbhub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  
+  cd_alpha_db:
+    image: postgres:17
+    volumes:
+      - db_alpha_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: dbalpha
+      POSTGRES_USER: victor
+      POSTGRES_PASSWORD: 12345Victor
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U victor -d dbalpha"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cd_beta_db:
+    image: postgres:17
+    volumes:
+      - db_beta_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: dbbeta
+      POSTGRES_USER: victor
+      POSTGRES_PASSWORD: 12345Victor
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U victor -d dbbeta"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  hub-api:
+    container_name: hub_service
+    build: Hub/
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "0.0.0.0:8000:8000"
+    volumes:
+      - ./Hub:/app
+    environment:
+      - DATABASE_URL=postgresql://victor:12345Victor@hub_db:5432/dbhub
+      - SECRET_KEY='django-insecure-za8lbt!ddvm^h@v)g)#7-2$%ttbd!f-nmvh3+jpt2lhm_3w-y*'
+      - DEBUG=True
+    depends_on:
+      hub_db:
+        condition: service_healthy
+
+  cd-api-alpha:
+    container_name: cd_alpha
+    build: DistributionCenter/
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "0.0.0.0:8001:8000"
+    volumes:
+      - ./DistributionCenter:/app
+    environment:
+      - DATABASE_URL=postgresql://victor:12345Victor@cd_alpha_db:5432/dbalpha
+      - SECRET_KEY='django-insecure-za8lbt!ddvm^h@v)g)#7-2$%ttbd!f-nmvh3+jpt2lhm_3w-y*'
+      - DEBUG=True
+      - HUB_URL=http://hub-api:8000
+      - MY_IP=cd-api-alpha:8000
+    depends_on:
+      cd_alpha_db:
+        condition: service_healthy
+  
+  cd-api-beta:
+    container_name: cd_beta
+    build: DistributionCenter/
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "0.0.0.0:8002:8000"
+    volumes:
+      - ./DistributionCenter:/app
+    environment:
+      - DATABASE_URL=postgresql://victor:12345Victor@cd_beta_db:5432/dbbeta
+      - SECRET_KEY='django-insecure-za8lbt!ddvm^h@v)g)#7-2$%ttbd!f-nmvh3+jpt2lhm_3w-y*'
+      - DEBUG=True
+      - HUB_URL=http://hub-api:8000
+      - MY_IP=cd-api-beta:8000
+    depends_on:
+      cd_beta_db:
+        condition: service_healthy
+
+volumes:
+  hub_db_data:
+  db_alpha_data:
+  db_beta_data:

@@ -1,0 +1,12 @@
+De acordo com a nossa solução:
+
+HUB: Busca os fornecedores candidatos na cadeia de CDs que ele conhece.
+CD: Devolve na resposta a operação que deve ser feita.
+
+Critério-chave: 
+    CD -> Loja real
+    HUB -> Central da Franquia (CDs = Lojas do mesmo tipo)
+
+Não faz sentido delegar ações que o HUB não deveria fazer, ex.:
+- entregar o endpoint de venda de um CD que foi sorteado dentro de uma operação 
+frágil de buscar candidatos (requests encadeados)
