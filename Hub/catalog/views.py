@@ -16,7 +16,7 @@ class CatalogRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     queryset = Product.objects.all()
     lookup_field = 'id'
 
-# acesso publico
+# acesso publicow
 class CatalogRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = CatalogSerializer
     queryset = Product.objects.filter(available=True)

@@ -13,34 +13,21 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderCreationSerializer(serializers.ModelSerializer):
-    sku = serializers.CharField(write_only=True)
-    order_url = serializers.SerializerMethodField(read_only=True)
-
     class Meta:
         model = Order
         fields = ['sku', 'quantity', 'client']
-        read_only_fields = ['id', 'sku', 'total_price', 'order_url']
 
-    def create(self, validated_data):
-        product = Product.objects.get(sku=validated_data['sku'])
-        client = CD.objects.get(id=validated_data['client'])
-        insufficient_batch = product.quantity < validated_data['quantity']
-
-        if insufficient_batch:
-            status = Order.AWAITING_CUSTOMER_DECISION
-        else:
-            status = Order.CONFIRMED
-        
-        return Order.objects.create(
-            product=product,
-            quantity=validated_data['quantity'],
-            total_price=validated_data['quantity'] * product.price,
-            client=client,
-            status=status
-        )
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('batch quantity must be greater than 1.')
+        if value > 1000:
+            raise serializers.ValidationError('batch request quantity limit reached max.: 1000.')
     
-    def get_order_url(self, obj):
-        return obj.get_absolute_url()
+    def validate_sku(self, value):
+        if len(value) > 10:
+            raise serializers.ValidationError('Incorret SKU value format.')
+        if len(value) < 7:
+            raise serializers.ValidationError('Incorrect SKU value format.')
 
 
 class BatchOperationalChoice(serializers.Serializer):

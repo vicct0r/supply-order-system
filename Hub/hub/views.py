@@ -20,7 +20,7 @@ class ClientListCreateAPIView(generics.ListCreateAPIView):
         }, status=response.status_code)
 
 # restrito
-class CdRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+class ClientRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = CD.objects.all()
     serializer_class = FullClientSerializer
 
