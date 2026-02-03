@@ -10,14 +10,7 @@ from .models import CD
 class ClientListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = FullClientSerializer
     queryset = CD.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-        return Response({
-            "status": "success",
-            "operation": "client_submition",
-            "client": response.data
-        }, status=response.status_code)
+    
 
 # restrito
 class ClientRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):

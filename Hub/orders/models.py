@@ -4,7 +4,7 @@ import uuid
 from django.core.exceptions import ValidationError
 
 from hub.models import CD
-
+from catalog.models import Product
 
 class Order(models.Model):
     PENDING = 'pdg'
@@ -38,13 +38,13 @@ class Order(models.Model):
     modified = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=3, choices=ORDER_STATUS_CHOICES, default=PENDING)
     client = models.ForeignKey(CD, related_name='orders', on_delete=models.CASCADE)
-    sku = models.CharField(max_length=7)
+    product = models.ForeignKey(Product, related_name='batch_request', on_delete=models.CASCADE, null=True, blank=True)
     quantity = models.IntegerField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, editable=False)
     operation = models.SmallIntegerField(choices=ORDER_OPERATIONAL_CHOICES, null=True, blank=True)
 
     def get_absolute_url(self):
-        return reverse("order_detail", kwargs={"id": self.id})
+        return reverse("orders:order_detail", kwargs={"id": self.id})
     
     def clean(self):
         if self.status == self.AWAITING_CUSTOMER_DECISION:
